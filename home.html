@@ -971,6 +971,9 @@ footer{background:var(--ink);color:var(--paper);border-top:1px solid var(--line-
         </div>
 
         <form class="contact-form" id="contactForm">
+          <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
+            <label for="hp">请留空<input id="hp" type="text" name="_gotcha" tabindex="-1" autocomplete="off"></label>
+          </div>
           <div class="form-row">
             <div class="field"><label for="f-name">姓名</label><input id="f-name" name="name" type="text" autocomplete="name" required></div>
             <div class="field"><label for="f-company">公司</label><input id="f-company" name="company" type="text" autocomplete="organization"></div>
@@ -1085,19 +1088,36 @@ footer{background:var(--ink);color:var(--paper);border-top:1px solid var(--line-
     if (cio) cio.observe(el); else countUp(el);
   });
 
-  /* contact form -> mailto (static site, no backend) */
+  /* contact form -> 询盘留言库（失败回退 mailto） */
+  var LEADS_ENDPOINT = "https://newsuma.com/api/lead";
   var form = document.getElementById("contactForm");
   var note = document.getElementById("formNote");
+  var btn = document.getElementById("formBtn");
   if (form) {
     form.addEventListener("submit", function(e){
       e.preventDefault();
       var d = new FormData(form);
-      var subject = "询盘 — " + (d.get("name")||"") + (d.get("company") ? " (" + d.get("company") + ")" : "");
-      var body = "姓名: " + (d.get("name")||"") + "\n公司: " + (d.get("company")||"") +
-                 "\n邮箱: " + (d.get("email")||"") + "\n\n" + (d.get("message")||"");
-      var href = "mailto:750946254@qq.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
-      if (note) note.textContent = "正在打开您的邮件客户端……如果没有反应，请发邮件至 750946254@qq.com";
-      window.location.href = href;
+      if (d.get("_gotcha")) { return; }
+      d.append("page", "zh");
+      if (btn) { btn.disabled = true; btn.textContent = "正在发送…"; }
+      if (note) note.textContent = "正在提交您的询盘……";
+      fetch(LEADS_ENDPOINT, { method: "POST", body: d })
+        .then(function(res){ if (!res.ok) throw new Error("HTTP " + res.status); return res.json(); })
+        .then(function(){
+          if (note) note.textContent = "提交成功！我们会在一个工作日内回复您。";
+          form.reset();
+        })
+        .catch(function(){
+          /* 留言库不可达时回退：打开邮件客户端直发 Mindy */
+          var subject = "询盘 — " + (d.get("name")||"") + (d.get("company") ? " (" + d.get("company") + ")" : "");
+          var body = "姓名: " + (d.get("name")||"") + "\n公司: " + (d.get("company")||"") +
+                     "\n邮箱: " + (d.get("email")||"") + "\n\n" + (d.get("message")||"");
+          if (note) note.textContent = "在线提交失败，正在打开您的邮件客户端……或直接发邮件至 750946254@qq.com";
+          window.location.href = "mailto:750946254@qq.com?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+        })
+        .finally(function(){
+          if (btn) { btn.disabled = false; btn.textContent = "发送询盘"; }
+        });
     });
   }
 

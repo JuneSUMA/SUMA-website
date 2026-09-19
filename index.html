@@ -980,7 +980,7 @@ footer{background:var(--ink);color:var(--paper);border-top:1px solid var(--line-
           </div>
         </div>
 
-        <form class="contact-form" id="contactForm" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <form class="contact-form" id="contactForm" action="https://newsuma.com/api/lead" method="POST">
           <!-- TODO(1/2): replace YOUR_FORM_ID here and in FORM_ENDPOINT (script below) with your Formspree form id -->
           <!-- honeypot: hidden from real users — bots that fill it are dropped as spam -->
           <div style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden" aria-hidden="true">
@@ -1103,7 +1103,7 @@ footer{background:var(--ink);color:var(--paper);border-top:1px solid var(--line-
 
   /* ---------- contact form -> Formspree (AJAX, no backend) ---------- */
   // TODO(1/2): replace YOUR_FORM_ID with your Formspree form id (also in the <form action> above)
-  var FORM_ENDPOINT = "https://formspree.io/f/YOUR_FORM_ID";
+  var FORM_ENDPOINT = "https://newsuma.com/api/lead";
   // TODO(3/3): optional Google reCAPTCHA v3 site key — leave "" to run without it
   var RECAPTCHA_SITE_KEY = "";
 
@@ -1156,6 +1156,7 @@ footer{background:var(--ink);color:var(--paper);border-top:1px solid var(--line-
       if (d.get("_gotcha")) { if (note) note.textContent = ""; return; }
 
       d.append("_subject", "New inquiry — " + (d.get("name") || "website"));
+      d.append("page", "en");
 
       withRecaptcha(function(grecaptcha){
         if (grecaptcha && RECAPTCHA_SITE_KEY) {
